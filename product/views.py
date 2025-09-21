@@ -1,8 +1,8 @@
 
 from rest_framework.response import Response
 from rest_framework import status
-from product.models import Product, Category, Review
-from product.serializers import ProductSerializer, CategorySerializer, ReviewSerializer
+from product.models import Product, Category, Review, ProductImage
+from product.serializers import ProductSerializer, CategorySerializer, ReviewSerializer, ProductImageSerializer
 from django.db.models import Count
 
 from rest_framework.viewsets import ModelViewSet
@@ -14,7 +14,30 @@ from api.permissions import IsAdminOrReadOnly, FullDjangoModelPermission
 from rest_framework.permissions import IsAuthenticated, DjangoModelPermissions, DjangoModelPermissionsOrAnonReadOnly
 
 
+
+class ProductImageViewset(ModelViewSet):
+
+
+     
+     serializer_class = ProductImageSerializer
+     permission_classes = [IsAdminOrReadOnly]
+
+     def get_queryset(self):
+         return ProductImage.objects.filter(product_id=self.kwargs['product_pk'])
+     
+     def perform_create(self, serializer):
+          serializer.save(product_id=self.kwargs['product_pk'])
+     
+     
 class ProductViewset(ModelViewSet):
+     """
+     API endpoint for managing product, in the E-commerce store
+      _Allows authenticated admin to create, update, and delete products
+      _Allows users to browse and filter product
+      _Support searching by name, description, and category
+      _Support ordering by price and updated_at
+
+     """
 
      queryset = Product.objects.all()
      serializer_class = ProductSerializer
@@ -22,12 +45,13 @@ class ProductViewset(ModelViewSet):
      filterset_class = ProductFilter
      pagination_class = DafaultPagination
      search_fields = ['name', 'description']
-     ordeering_fields = ['price', 'updated_at']
-     # permission_classes = [IsAdminUser]
-     # permission_classes = [IsAuthenticated]
+     ordering_fields = ['price', 'updated_at']
+     
      permission_classes = [IsAdminOrReadOnly]
-     # permission_classes = [FullDjangoModelPermission]
-     # permission_classes = [DjangoModelPermissionsOrAnonReadOnly]
+
+    
+
+      
 
      def destroy(self, request, *args, **kwargs):
           product = self.get_object()
@@ -43,8 +67,6 @@ class CategoryViewSet(ModelViewSet):
      serializer_class = CategorySerializer
 
 
-
-
 class ReviewViewSet(ModelViewSet):
       
      serializer_class = ReviewSerializer
@@ -56,4 +78,4 @@ class ReviewViewSet(ModelViewSet):
           return Review.objects.filter(product_id=self.kwargs['product_pk'])
 
      def get_serializer_context(self):
-          return {'product_id':self.kwargs['product_pk']}
+          return {'product_id':self.kwargs.get('product_pk')}
