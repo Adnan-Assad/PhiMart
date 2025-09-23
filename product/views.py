@@ -17,8 +17,6 @@ from rest_framework.permissions import IsAuthenticated, DjangoModelPermissions, 
 
 class ProductImageViewset(ModelViewSet):
 
-
-     
      serializer_class = ProductImageSerializer
      permission_classes = [IsAdminOrReadOnly]
 
@@ -26,7 +24,9 @@ class ProductImageViewset(ModelViewSet):
          return ProductImage.objects.filter(product_id=self.kwargs['product_pk'])
      
      def perform_create(self, serializer):
+          product = Product.objects.get(pk=self.kwargs['product_pk'])
           serializer.save(product_id=self.kwargs['product_pk'])
+           
      
      
 class ProductViewset(ModelViewSet):
@@ -48,10 +48,6 @@ class ProductViewset(ModelViewSet):
      ordering_fields = ['price', 'updated_at']
      
      permission_classes = [IsAdminOrReadOnly]
-
-    
-
-      
 
      def destroy(self, request, *args, **kwargs):
           product = self.get_object()
