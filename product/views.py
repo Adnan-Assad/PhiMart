@@ -39,7 +39,7 @@ class ProductViewset(ModelViewSet):
 
      """
 
-     queryset = Product.objects.all()
+     
      serializer_class = ProductSerializer
      filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
      filterset_class = ProductFilter
@@ -48,6 +48,9 @@ class ProductViewset(ModelViewSet):
      ordering_fields = ['price', 'updated_at']
      
      permission_classes = [IsAdminOrReadOnly]
+
+     def get_queryset(self):
+         return Product.objects.prefetch_related('images').all()     
 
      def destroy(self, request, *args, **kwargs):
           product = self.get_object()
